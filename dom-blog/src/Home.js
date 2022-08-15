@@ -10,28 +10,35 @@ const Home = () => {
     // const handleClick =()=> {
     //     setName("Luigi");
     //     setAge(30);
-    const [blogs, setBlogs] = useState([
-        { title: 'My new website', body: 'lorem ipsum...', author: 'mario', id: 1 },
-        { title: 'Welcome party!', body: 'lorem ipsum...', author: 'yoshi', id: 2 },
-        { title: 'Web dev top tips', body: 'lorem ipsum...', author: 'mario', id: 3 }
-      ]);
-    const [name, setName]= useState('Mario');
+    const [blogs, setBlogs] = useState(null);
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState(null)
+    // const [name, setName]= useState('Mario');
 
-    
-    const handleDelete = (id) => {
-        const newBlogs = blogs.filter(blog => blog.id !== id);
-        setBlogs(newBlogs);
-    }
 
     useEffect(() => {
-        console.log('useEffect ran')
-        console.log(name);
-    },[name])
+        fetch('http://localhost:8000/blogs')
+          .then(res => {
+            if(!res.ok){
+                throw Error("Problem fetching data!");
+            }
+            return res.json();
+          })
+          .then(data => {
+            setBlogs(data);
+            setIsLoading(false);
+            setError(null);
+          }) 
+          .catch(err=> {
+            setIsLoading(false);
+            setError(err.message);
+            
+          })   },[])
     return ( 
         <div className="home">
-            <BlogList blogs = {blogs} title = "All Blogs!" handleDelete = { handleDelete }/>
-            <button onClick={()=> setName('luigi')}>Change Name</button>
-            <p>{name}</p>
+            {error && <div>{ error }</div> }
+            {isLoading && <div>loading...</div> }
+            {blogs && <BlogList blogs = {blogs} title = "All Blogs!" />}
         </div>
      );
 }
